@@ -1,0 +1,90 @@
+JFDML JFormDesigner: "8.2.4.0.393" Java: "21.0.4" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			"defaultCloseOperation": 3
+			"resizable": false
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+				"$columnSpecs": "0, 0:1.0"
+				"$rowSpecs": "0, 0:1.0"
+				"$alignTop": true
+				"$alignLeft": true
+				"$hGap": 5
+			} ) {
+				name: "panel2"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+					"hgap": 5
+					"vgap": 5
+				} ) {
+					name: "pnlButtons"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnSave"
+						"text": "Salvar em lote"
+						"border": &EmptyBorder0 new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSaveActionPerformed", false ) )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Last"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnSelectArchiver"
+						"text": "Selecionar Arquivo"
+						"border": #EmptyBorder0
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSelectArchiverActionPerformed", false ) )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "First"
+					} )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridy": 1
+					"vAlign": 1
+					"insets": new java.awt.Insets( 15, 5, 0, 5 )
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "panel3"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
+						"$columnSpecs": "0:1.0, 0"
+						"$rowSpecs": "0:1.0"
+						"$alignTop": true
+						"$alignLeft": true
+						"$hGap": 5
+					} ) {
+						name: "panel4"
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "txtSearch"
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+						add( new FormComponent( "javax.swing.JButton" ) {
+							name: "btnSelectArchiverWeb"
+							"text": "Selecionar arquivo na web"
+							"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSelectArchiverWebActionPerformed", false ) )
+						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+							"gridx": 1
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "South"
+					} )
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "scroll"
+						"border": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+							name: "pnlImages"
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Center"
+					} )
+				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+					"gridx": 1
+					"gridy": 1
+					"insets": new java.awt.Insets( 5, 0, 5, 5 )
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+	}
+}
