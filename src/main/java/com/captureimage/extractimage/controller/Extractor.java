@@ -6,7 +6,9 @@ import com.captureimage.extractimage.records.FileRecord;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.io.RandomAccessRead;
 import org.apache.pdfbox.io.ScratchFile;
+import org.apache.pdfbox.pdfparser.PDFObjectStreamParser;
 import org.apache.pdfbox.pdfparser.PDFParser;
+import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.security.web.util.UrlUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -101,13 +103,20 @@ public class Extractor {
 
         if (response.statusCode() == 200){
 
-            byte[] encode = Base64.getMimeEncoder().encode(response.body().getBytes());
-            ByteArrayInputStream stream = new ByteArrayInputStream(encode);
+            File file = new File("src/main/java/com/captureimage/extractimage/temp/temp.pdf");
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            out.write(encode);
-            return load(PDDocument.load(out.toByteArray()));
+            Scanner scanner = new Scanner(response.body());
+            FileWriter writer = new FileWriter(file);
+            writer.write(response.body());
+//            writer.write(response.body());
 
+//            while (scanner.hasNext()){
+//                writer.write(scanner.next().);
+//            }
+
+            writer.close();
+
+            return load(PDDocument.load(file));
         }
 
         return List.of();
