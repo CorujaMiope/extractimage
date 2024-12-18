@@ -4,8 +4,6 @@
 
 package views;
 
-import javax.swing.border.*;
-import javax.swing.plaf.metal.*;
 import com.captureimage.extractimage.controller.Extractor;
 import com.captureimage.extractimage.dto.ImagePropertyDTO;
 import com.captureimage.extractimage.records.FileRecord;
@@ -13,13 +11,15 @@ import enums.DIALOG_MODE;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jdesktop.swingx.WrapLayout;
 import org.springframework.security.web.util.UrlUtils;
-import views.panels.*;
 import views.panels.ImagePanel;
+import views.panels.RoundedBorder;
+import views.panels.RoundedButton;
 import views.utils.CustomDialog;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.text.DateFormatter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -48,6 +48,9 @@ public class FrmInitialScreean extends JFrame {
         JScrollBar jScrollBar = new JScrollBar(JScrollBar.VERTICAL);
         jScrollBar.setUnitIncrement(10);
         scroll.setVerticalScrollBar(jScrollBar);
+        setTitle("IEx");
+        setIconImage(new ImageIcon("src/main/resources/images/img_2.png").getImage());
+
     }
 
     private void buildImage(List<ImagePropertyDTO> dtos) throws IOException {
@@ -81,6 +84,7 @@ public class FrmInitialScreean extends JFrame {
                     dtos = extractor.inspectType(new FileRecord(file.getPath()));
                     buildImage(dtos);
                     btnSave.setEnabled(!dtos.isEmpty());
+                    btnClear.setEnabled(!dtos.isEmpty());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -103,6 +107,7 @@ public class FrmInitialScreean extends JFrame {
                     dtos = extractor.inspectType(new FileRecord(txtSearch.getText()));
                     buildImage(dtos);
                     btnSave.setEnabled(!dtos.isEmpty());
+                    btnClear.setEnabled(!dtos.isEmpty());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -145,6 +150,17 @@ public class FrmInitialScreean extends JFrame {
         }
     }
 
+    private void btnClearActionPerformed() {
+        SwingUtilities.invokeLater(()->{
+            for (Component component : pnlImages.getComponents()) {
+                pnlImages.remove(component);
+                pnlImages.repaint();
+                pnlImages.revalidate();
+            }
+            btnClear.setEnabled(false);
+        });
+    }
+
     private void loadingMode(boolean loading) {
         if (loading){
             var load = new JXBusyLabel();
@@ -165,6 +181,7 @@ public class FrmInitialScreean extends JFrame {
         pnlButtons = new JPanel();
         btnSave = new RoundedButton();
         btnSelectArchiver = new RoundedButton();
+        btnClear = new RoundedButton();
         panel3 = new JPanel();
         panel4 = new JPanel();
         txtSearch = new JTextField();
@@ -198,7 +215,7 @@ public class FrmInitialScreean extends JFrame {
                 btnSave.setEnabled(false);
                 btnSave.setBackground(Color.gray);
                 btnSave.addActionListener(e -> btnSaveActionPerformed());
-                pnlButtons.add(btnSave, BorderLayout.PAGE_END);
+                pnlButtons.add(btnSave, BorderLayout.CENTER);
 
                 //---- btnSelectArchiver ----
                 btnSelectArchiver.setText("Selecionar Arquivo");
@@ -206,6 +223,13 @@ public class FrmInitialScreean extends JFrame {
                 btnSelectArchiver.setBackground(Color.gray);
                 btnSelectArchiver.addActionListener(e -> btnSelectArchiverActionPerformed());
                 pnlButtons.add(btnSelectArchiver, BorderLayout.PAGE_START);
+
+                //---- btnClear ----
+                btnClear.setText("Limpar");
+                btnClear.setBackground(Color.gray);
+                btnClear.setEnabled(false);
+                btnClear.addActionListener(e -> btnClearActionPerformed());
+                pnlButtons.add(btnClear, BorderLayout.PAGE_END);
             }
             panel2.add(pnlButtons, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
@@ -273,6 +297,7 @@ public class FrmInitialScreean extends JFrame {
     private JPanel pnlButtons;
     private RoundedButton btnSave;
     private RoundedButton btnSelectArchiver;
+    private RoundedButton btnClear;
     private JPanel panel3;
     private JPanel panel4;
     private JTextField txtSearch;

@@ -30,7 +30,7 @@ new FormModel {
 						"background": sfield java.awt.Color gray
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSaveActionPerformed", false ) )
 					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "Last"
+						"value": "Center"
 					} )
 					add( new FormComponent( "views.panels.RoundedButton" ) {
 						name: "btnSelectArchiver"
@@ -40,6 +40,15 @@ new FormModel {
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSelectArchiverActionPerformed", false ) )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "First"
+					} )
+					add( new FormComponent( "views.panels.RoundedButton" ) {
+						name: "btnClear"
+						"text": "Limpar"
+						"background": sfield java.awt.Color gray
+						"enabled": false
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnClearActionPerformed", false ) )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Last"
 					} )
 				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 					"gridy": 1

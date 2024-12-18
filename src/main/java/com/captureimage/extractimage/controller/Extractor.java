@@ -1,15 +1,22 @@
 package com.captureimage.extractimage.controller;
 
 import com.captureimage.extractimage.dto.ImagePropertyDTO;
+import com.captureimage.extractimage.process.OutputStreamDocument;
 import com.captureimage.extractimage.process.PDFEngine;
 import com.captureimage.extractimage.records.FileRecord;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.contentstream.PDFStreamEngine;
+import org.apache.pdfbox.debugger.ui.DocumentEntry;
+import org.apache.pdfbox.debugger.ui.PDFTreeModel;
 import org.apache.pdfbox.io.RandomAccessRead;
 import org.apache.pdfbox.io.ScratchFile;
 import org.apache.pdfbox.pdfparser.PDFObjectStreamParser;
 import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import org.apache.pdfbox.tools.PDFBox;
+import org.apache.pdfbox.tools.PDFText2HTML;
 import org.springframework.security.web.util.UrlUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +28,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Scanner;
@@ -39,7 +47,7 @@ public class Extractor {
 
         try {
 
-            if (UrlUtils.isAbsoluteUrl(file.path())){
+            if (UrlUtils.isAbsoluteUrl(file.path())) {
                 return getArchiveFromWeb(file.path());
             }
 
@@ -58,7 +66,7 @@ public class Extractor {
             PDDocument doc = PDDocument.load(new File(file.path()));
             PDFEngine engine = new PDFEngine(doc);
             return engine.getImagePropertyDTOs();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             System.out.println(ex.getCause());
         }
         return List.of();
@@ -79,7 +87,7 @@ public class Extractor {
     }
 
 
-//    private List<BufferedImage> load(File file) throws IOException {
+    //    private List<BufferedImage> load(File file) throws IOException {
 //        PDDocument doc = PDDocument.load(file);
 //        PDFEngine engine = new PDFEngine(doc);
 //        return engine.getImages();
@@ -101,20 +109,18 @@ public class Extractor {
         request = HttpRequest.newBuilder(URI.create(path)).GET().build();
         response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (response.statusCode() == 200){
+        if (response.statusCode() == 200) {
 
             File file = new File("src/main/java/com/captureimage/extractimage/temp/temp.pdf");
 
             Scanner scanner = new Scanner(response.body());
             FileWriter writer = new FileWriter(file);
-            writer.write(response.body());
-//            writer.write(response.body());
-
-//            while (scanner.hasNext()){
-//                writer.write(scanner.next().);
-//            }
-
+            writer.write("");
             writer.close();
+
+            OutputStreamDocument outputStreamDocument = new OutputStreamDocument();
+            outputStreamDocument.write(response.body());
+            outputStreamDocument.getImages();
 
             return load(PDDocument.load(file));
         }
