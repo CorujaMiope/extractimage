@@ -113,16 +113,9 @@ public class Extractor {
 
             File file = new File("src/main/java/com/captureimage/extractimage/temp/temp.pdf");
 
-            Scanner scanner = new Scanner(response.body());
-            FileWriter writer = new FileWriter(file);
-            writer.write("");
-            writer.close();
-
             OutputStreamDocument outputStreamDocument = new OutputStreamDocument();
-            outputStreamDocument.write(response.body());
+            outputStreamDocument.write(response.body(), file);
             outputStreamDocument.getImages();
-
-            return load(PDDocument.load(file));
         }
 
         return List.of();

@@ -20,6 +20,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.DateFormatter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -32,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 /**
  * @author ADMIN
@@ -50,7 +53,34 @@ public class FrmInitialScreean extends JFrame {
         scroll.setVerticalScrollBar(jScrollBar);
         setTitle("IEx");
         setIconImage(new ImageIcon("src/main/resources/images/img_2.png").getImage());
+        setLocationRelativeTo(null);
+        txtSearchListener();
+    }
 
+    private void txtSearchListener() {
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changeColorText();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeColorText();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changeColorText();
+            }
+
+            private void changeColorText(){
+                boolean isUrl =  UrlUtils.isAbsoluteUrl(txtSearch.getText());
+                txtSearch.setForeground(isUrl ? Color.blue : Color.black);
+            }
+
+        });
     }
 
     private void buildImage(List<ImagePropertyDTO> dtos) throws IOException {
@@ -248,6 +278,10 @@ public class FrmInitialScreean extends JFrame {
                     ((GridBagLayout)panel4.getLayout()).rowHeights = new int[] {0, 0};
                     ((GridBagLayout)panel4.getLayout()).columnWeights = new double[] {1.0, 0.0, 1.0E-4};
                     ((GridBagLayout)panel4.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
+
+                    //---- txtSearch ----
+                    txtSearch.setBackground(Color.lightGray);
+                    txtSearch.setForeground(Color.white);
                     panel4.add(txtSearch, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 2), 0, 0));

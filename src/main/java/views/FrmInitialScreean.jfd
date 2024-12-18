@@ -71,6 +71,8 @@ new FormModel {
 						"opaque": false
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "txtSearch"
+							"background": sfield java.awt.Color lightGray
+							"foreground": sfield java.awt.Color white
 						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
 						add( new FormComponent( "views.panels.RoundedButton" ) {
 							name: "btnSelectArchiverWeb"
