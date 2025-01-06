@@ -7,22 +7,34 @@ package views;
 import com.captureimage.extractimage.controller.Extractor;
 import com.captureimage.extractimage.dto.ImagePropertyDTO;
 import com.captureimage.extractimage.records.FileRecord;
-import org.apache.pdfbox.util.StringUtil;
-import org.bouncycastle.util.Strings;
+import enums.DIALOG_MODE;
+import org.jdesktop.swingx.JXBusyLabel;
 import org.jdesktop.swingx.WrapLayout;
 import org.springframework.security.web.util.UrlUtils;
 import views.panels.ImagePanel;
+import views.panels.RoundedBorder;
+import views.panels.RoundedButton;
 import views.utils.CustomDialog;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.DateFormatter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -32,6 +44,7 @@ import java.util.concurrent.Executors;
 public class FrmInitialScreean extends JFrame {
 
     private ExecutorService service = Executors.newCachedThreadPool();
+    private ExecutorService executeImages = Executors.newFixedThreadPool(5);
     private List<ImagePropertyDTO> dtos = null;
 
     public FrmInitialScreean() {
@@ -41,18 +54,56 @@ public class FrmInitialScreean extends JFrame {
         JScrollBar jScrollBar = new JScrollBar(JScrollBar.VERTICAL);
         jScrollBar.setUnitIncrement(10);
         scroll.setVerticalScrollBar(jScrollBar);
+        setTitle("IEx");
+        setIconImage(new ImageIcon(Objects.requireNonNull(Main.class.getResource("/images/IExIcon.png"))).getImage());
+        setLocationRelativeTo(null);
+        txtSearchListener();
+    }
+
+    private void txtSearchListener() {
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changeColorText();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeColorText();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changeColorText();
+            }
+
+            private void changeColorText(){
+                boolean isUrl =  UrlUtils.isAbsoluteUrl(txtSearch.getText());
+                txtSearch.setForeground(isUrl ? Color.blue : Color.black);
+            }
+
+        });
     }
 
     private void buildImage(List<ImagePropertyDTO> dtos) throws IOException {
         for (ImagePropertyDTO image : dtos){
 
-            BufferedImage read = ImageIO.read(new ByteArrayInputStream(image.getData()));
-            ImagePanel imagePanel = new ImagePanel(image.getWidth(), image.getHeigh(), read);
-            pnlImages.add(imagePanel, 0);
+            executeImages.execute(()->{
+                BufferedImage read = null;
+                try {
+                    read = ImageIO.read(new ByteArrayInputStream(image.getData()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
-            SwingUtilities.invokeLater(()->{
-                pnlImages.repaint();
-                pnlImages.revalidate();
+                ImagePanel imagePanel = new ImagePanel(image.getWidth(), image.getHeigh(), read);
+                pnlImages.add(imagePanel, 0);
+
+                SwingUtilities.invokeLater(()->{
+                    pnlImages.repaint();
+                    pnlImages.revalidate();
+                });
             });
         }
     }
@@ -73,6 +124,8 @@ public class FrmInitialScreean extends JFrame {
                 try {
                     dtos = extractor.inspectType(new FileRecord(file.getPath()));
                     buildImage(dtos);
+                    btnSave.setEnabled(!dtos.isEmpty());
+                    btnClear.setEnabled(!dtos.isEmpty());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -93,7 +146,14 @@ public class FrmInitialScreean extends JFrame {
                 Extractor extractor = new Extractor();
                 try {
                     dtos = extractor.inspectType(new FileRecord(txtSearch.getText()));
-                    buildImage(dtos);
+
+                    if (dtos != null){
+                        buildImage(dtos);
+                        btnSave.setEnabled(!dtos.isEmpty());
+                        btnClear.setEnabled(!dtos.isEmpty());
+                    }
+
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -102,7 +162,62 @@ public class FrmInitialScreean extends JFrame {
     }
 
     private void btnSaveActionPerformed() {
-        // TODO add your code here
+        JFileChooser chooser = CustomDialog.chooserDialog(this, DIALOG_MODE.SAVE_FILE);
+
+        if (chooser.getSelectedFile() != null) {
+
+
+            service.submit(() -> {
+                loadingMode(true);
+                for (var img : dtos) {
+                    try {
+
+                        ImageIO.setUseCache(false);
+                        BufferedImage read = ImageIO.read(new ByteArrayInputStream(img.getData()));
+
+                        Graphics2D g1 = read.createGraphics();
+                        RenderingHints rh = g1.getRenderingHints();
+                        rh.put (RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                        g1.setRenderingHints (rh);
+
+                        DateFormatter formatter = new DateFormatter(new SimpleDateFormat("dd_MM_aaaa_HH_mm_ss"));
+                        String fileName = "img_%s.jpg".formatted(formatter.getFormat().format(Date.from(Instant.now())));
+                        File filePath = new File(chooser.getSelectedFile().getPath() + "/" + fileName);
+                        ImageIO.write(read, "jpg", filePath);
+                    } catch (Exception e) {
+                        System.out.println("Error: " + e.getCause());
+                        loadingMode(false);
+                        btnSave.setEnabled(false);
+                    }
+                }
+                loadingMode(false);
+                btnSave.setEnabled(false);
+            });
+        }
+    }
+
+    private void btnClearActionPerformed() {
+        SwingUtilities.invokeLater(()->{
+            for (Component component : pnlImages.getComponents()) {
+                pnlImages.remove(component);
+                pnlImages.repaint();
+                pnlImages.revalidate();
+            }
+            btnClear.setEnabled(false);
+        });
+    }
+
+    private void loadingMode(boolean loading) {
+        if (loading){
+            var load = new JXBusyLabel();
+            load.setBusy(true);
+            btnSave.add(load);
+        }else{
+            if (btnSave.getComponent(0) != null){
+                btnSave.remove(0);
+                btnSave.setText("Salvar em lote");
+            }
+        }
     }
 
 
@@ -110,12 +225,13 @@ public class FrmInitialScreean extends JFrame {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
         panel2 = new JPanel();
         pnlButtons = new JPanel();
-        btnSave = new JButton();
-        btnSelectArchiver = new JButton();
+        btnSave = new RoundedButton();
+        btnSelectArchiver = new RoundedButton();
+        btnClear = new RoundedButton();
         panel3 = new JPanel();
         panel4 = new JPanel();
         txtSearch = new JTextField();
-        btnSelectArchiverWeb = new JButton();
+        btnSelectArchiverWeb = new RoundedButton();
         scroll = new JScrollPane();
         pnlImages = new JPanel();
 
@@ -127,27 +243,39 @@ public class FrmInitialScreean extends JFrame {
 
         //======== panel2 ========
         {
+            panel2.setBackground(new Color(0x333333));
             panel2.setLayout(new GridBagLayout());
-            ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0, 0};
+            ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {196, 0, 0};
             ((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0, 0};
             ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 1.0, 1.0E-4};
             ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {0.0, 1.0, 1.0E-4};
 
             //======== pnlButtons ========
             {
+                pnlButtons.setOpaque(false);
                 pnlButtons.setLayout(new BorderLayout(5, 5));
 
                 //---- btnSave ----
                 btnSave.setText("Salvar em lote");
-                btnSave.setBorder(new EmptyBorder(5, 5, 5, 5));
+                btnSave.setBorder(new RoundedBorder());
+                btnSave.setEnabled(false);
+                btnSave.setBackground(Color.gray);
                 btnSave.addActionListener(e -> btnSaveActionPerformed());
-                pnlButtons.add(btnSave, BorderLayout.PAGE_END);
+                pnlButtons.add(btnSave, BorderLayout.CENTER);
 
                 //---- btnSelectArchiver ----
                 btnSelectArchiver.setText("Selecionar Arquivo");
-                btnSelectArchiver.setBorder(new EmptyBorder(5, 5, 5, 5));
+                btnSelectArchiver.setBorder(new RoundedBorder());
+                btnSelectArchiver.setBackground(Color.gray);
                 btnSelectArchiver.addActionListener(e -> btnSelectArchiverActionPerformed());
                 pnlButtons.add(btnSelectArchiver, BorderLayout.PAGE_START);
+
+                //---- btnClear ----
+                btnClear.setText("Limpar");
+                btnClear.setBackground(Color.gray);
+                btnClear.setEnabled(false);
+                btnClear.addActionListener(e -> btnClearActionPerformed());
+                pnlButtons.add(btnClear, BorderLayout.PAGE_END);
             }
             panel2.add(pnlButtons, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
                 GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL,
@@ -155,22 +283,29 @@ public class FrmInitialScreean extends JFrame {
 
             //======== panel3 ========
             {
-                panel3.setLayout(new BorderLayout());
+                panel3.setOpaque(false);
+                panel3.setLayout(new BorderLayout(0, 5));
 
                 //======== panel4 ========
                 {
+                    panel4.setOpaque(false);
                     panel4.setLayout(new GridBagLayout());
                     ((GridBagLayout)panel4.getLayout()).columnWidths = new int[] {0, 0, 0};
                     ((GridBagLayout)panel4.getLayout()).rowHeights = new int[] {0, 0};
                     ((GridBagLayout)panel4.getLayout()).columnWeights = new double[] {1.0, 0.0, 1.0E-4};
                     ((GridBagLayout)panel4.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
+
+                    //---- txtSearch ----
+                    txtSearch.setBackground(Color.lightGray);
+                    txtSearch.setForeground(Color.white);
                     panel4.add(txtSearch, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                        new Insets(0, 0, 0, 2), 0, 0));
 
                     //---- btnSelectArchiverWeb ----
                     btnSelectArchiverWeb.setText("Selecionar arquivo na web");
-                    btnSelectArchiverWeb.setBorder(new EmptyBorder(5, 5, 5, 5));
+                    btnSelectArchiverWeb.setBorder(new RoundedBorder());
+                    btnSelectArchiverWeb.setBackground(new Color(0x3366ff));
                     btnSelectArchiverWeb.addActionListener(e -> btnSelectArchiverWebActionPerformed());
                     panel4.add(btnSelectArchiverWeb, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -181,9 +316,14 @@ public class FrmInitialScreean extends JFrame {
                 //======== scroll ========
                 {
                     scroll.setBorder(null);
+                    scroll.setBackground(new Color(0x666666));
+                    scroll.setOpaque(false);
 
                     //======== pnlImages ========
                     {
+                        pnlImages.setBackground(new Color(0x333333));
+                        pnlImages.setBorder(new TitledBorder(new LineBorder(Color.gray, 3, true), "Imagens Extraidas: ", TitledBorder.LEADING, TitledBorder.TOP,
+                            new Font("Monospaced", Font.BOLD, 16), Color.black));
                         pnlImages.setLayout(new FlowLayout());
                     }
                     scroll.setViewportView(pnlImages);
@@ -205,12 +345,13 @@ public class FrmInitialScreean extends JFrame {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
     private JPanel panel2;
     private JPanel pnlButtons;
-    private JButton btnSave;
-    private JButton btnSelectArchiver;
+    private RoundedButton btnSave;
+    private RoundedButton btnSelectArchiver;
+    private RoundedButton btnClear;
     private JPanel panel3;
     private JPanel panel4;
     private JTextField txtSearch;
-    private JButton btnSelectArchiverWeb;
+    private RoundedButton btnSelectArchiverWeb;
     private JScrollPane scroll;
     private JPanel pnlImages;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on

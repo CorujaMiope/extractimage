@@ -8,56 +8,77 @@ new FormModel {
 			"defaultCloseOperation": 3
 			"resizable": false
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
-				"$columnSpecs": "0, 0:1.0"
+				"$columnSpecs": "191, 0:1.0"
 				"$rowSpecs": "0, 0:1.0"
 				"$alignTop": true
 				"$alignLeft": true
 				"$hGap": 5
 			} ) {
 				name: "panel2"
+				"background": new java.awt.Color( 51, 51, 51, 255 )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
 					"hgap": 5
 					"vgap": 5
 				} ) {
 					name: "pnlButtons"
-					add( new FormComponent( "javax.swing.JButton" ) {
+					"opaque": false
+					add( new FormComponent( "views.panels.RoundedButton" ) {
 						name: "btnSave"
 						"text": "Salvar em lote"
-						"border": &EmptyBorder0 new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+						"border": &RoundedBorder0 new views.panels.RoundedBorder
+						"enabled": false
+						"background": sfield java.awt.Color gray
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSaveActionPerformed", false ) )
 					}, new FormLayoutConstraints( class java.lang.String ) {
-						"value": "Last"
+						"value": "Center"
 					} )
-					add( new FormComponent( "javax.swing.JButton" ) {
+					add( new FormComponent( "views.panels.RoundedButton" ) {
 						name: "btnSelectArchiver"
 						"text": "Selecionar Arquivo"
-						"border": #EmptyBorder0
+						"border": #RoundedBorder0
+						"background": sfield java.awt.Color gray
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSelectArchiverActionPerformed", false ) )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "First"
+					} )
+					add( new FormComponent( "views.panels.RoundedButton" ) {
+						name: "btnClear"
+						"text": "Limpar"
+						"background": sfield java.awt.Color gray
+						"enabled": false
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnClearActionPerformed", false ) )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "Last"
 					} )
 				}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 					"gridy": 1
 					"vAlign": 1
 					"insets": new java.awt.Insets( 15, 5, 0, 5 )
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) {
+					"vgap": 5
+				} ) {
 					name: "panel3"
+					"opaque": false
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridBagLayout ) {
 						"$columnSpecs": "0:1.0, 0"
 						"$rowSpecs": "0:1.0"
 						"$alignTop": true
 						"$alignLeft": true
-						"$hGap": 5
+						"$hGap": 2
 					} ) {
 						name: "panel4"
+						"opaque": false
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "txtSearch"
+							"background": sfield java.awt.Color lightGray
+							"foreground": sfield java.awt.Color white
 						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
-						add( new FormComponent( "javax.swing.JButton" ) {
+						add( new FormComponent( "views.panels.RoundedButton" ) {
 							name: "btnSelectArchiverWeb"
 							"text": "Selecionar arquivo na web"
-							"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+							"border": #RoundedBorder0
+							"background": new java.awt.Color( 51, 102, 255, 255 )
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnSelectArchiverWebActionPerformed", false ) )
 						}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 							"gridx": 1
@@ -68,8 +89,12 @@ new FormModel {
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scroll"
 						"border": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"background": new java.awt.Color( 102, 102, 102, 255 )
+						"opaque": false
 						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
 							name: "pnlImages"
+							"background": new java.awt.Color( 51, 51, 51, 255 )
+							"border": new javax.swing.border.TitledBorder( new javax.swing.border.LineBorder( sfield java.awt.Color gray, 3, true ), "Imagens Extraidas: ", 4, 2, new java.awt.Font( "Monospaced", 1, 16 ), sfield java.awt.Color black )
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Center"

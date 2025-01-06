@@ -1,24 +1,38 @@
 package com.captureimage.extractimage.controller;
 
 import com.captureimage.extractimage.dto.ImagePropertyDTO;
+import com.captureimage.extractimage.process.OutputStreamDocument;
 import com.captureimage.extractimage.process.PDFEngine;
 import com.captureimage.extractimage.records.FileRecord;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.contentstream.PDFStreamEngine;
+import org.apache.pdfbox.debugger.ui.DocumentEntry;
+import org.apache.pdfbox.debugger.ui.PDFTreeModel;
 import org.apache.pdfbox.io.RandomAccessRead;
 import org.apache.pdfbox.io.ScratchFile;
+import org.apache.pdfbox.pdfparser.PDFObjectStreamParser;
 import org.apache.pdfbox.pdfparser.PDFParser;
+import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import org.apache.pdfbox.tools.PDFBox;
+import org.apache.pdfbox.tools.PDFText2HTML;
 import org.springframework.security.web.util.UrlUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.imageio.ImageIO;
 import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Scanner;
@@ -30,14 +44,14 @@ public class Extractor {
 
     private HttpClient client;
     private HttpRequest request;
-    private HttpResponse<String> response;
+    private HttpResponse<byte[]> response;
 
     @GetMapping("/foundimage")
     public List<ImagePropertyDTO> inspectType(@RequestBody FileRecord file) throws IOException {
 
         try {
 
-            if (UrlUtils.isAbsoluteUrl(file.path())){
+            if (UrlUtils.isAbsoluteUrl(file.path())) {
                 return getArchiveFromWeb(file.path());
             }
 
@@ -56,7 +70,7 @@ public class Extractor {
             PDDocument doc = PDDocument.load(new File(file.path()));
             PDFEngine engine = new PDFEngine(doc);
             return engine.getImagePropertyDTOs();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             System.out.println(ex.getCause());
         }
         return List.of();
@@ -76,12 +90,6 @@ public class Extractor {
         load(file);
     }
 
-
-//    private List<BufferedImage> load(File file) throws IOException {
-//        PDDocument doc = PDDocument.load(file);
-//        PDFEngine engine = new PDFEngine(doc);
-//        return engine.getImages();
-//    }
     private List<ImagePropertyDTO> load(File file) throws IOException {
         PDDocument doc = PDDocument.load(file);
         PDFEngine engine = new PDFEngine(doc);
@@ -97,19 +105,22 @@ public class Extractor {
     private List<ImagePropertyDTO> getArchiveFromWeb(String path) throws IOException, InterruptedException {
         client = HttpClient.newHttpClient();
         request = HttpRequest.newBuilder(URI.create(path)).GET().build();
-        response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
 
-        if (response.statusCode() == 200){
+        List<ImagePropertyDTO> dtoList = new ArrayList<>();
 
-            byte[] encode = Base64.getMimeEncoder().encode(response.body().getBytes());
-            ByteArrayInputStream stream = new ByteArrayInputStream(encode);
+        if (response.statusCode() == 200) {
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            out.write(encode);
-            return load(PDDocument.load(out.toByteArray()));
-
+            File file = File.createTempFile(
+                    "temp",
+                    ".pdf",
+                    new File("src/main/java/com/captureimage/extractimage/temp/")
+            );
+            OutputStreamDocument outputStreamDocument = new OutputStreamDocument();
+            outputStreamDocument.write(response.body(), file);
+            dtoList = outputStreamDocument.getImagePropertyDTOS();
         }
 
-        return List.of();
+        return dtoList;
     }
 }

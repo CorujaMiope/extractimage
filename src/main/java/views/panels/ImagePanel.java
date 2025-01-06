@@ -81,6 +81,11 @@ public class ImagePanel extends JPanel implements Comparable<ImagePanel> {
             double scaleY = height / (double) image.getHeight(null);
             g1.scale(scaleX, scaleY);
             g1.drawImage(image, 0, 0, null);
+
+            RenderingHints rh = g1.getRenderingHints();
+            rh.put (RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g1.setRenderingHints (rh);
+
             g1.dispose();
 
         }
