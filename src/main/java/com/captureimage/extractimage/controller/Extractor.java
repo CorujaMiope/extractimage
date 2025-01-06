@@ -23,12 +23,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.imageio.ImageIO;
 import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Scanner;
@@ -40,7 +44,7 @@ public class Extractor {
 
     private HttpClient client;
     private HttpRequest request;
-    private HttpResponse<String> response;
+    private HttpResponse<byte[]> response;
 
     @GetMapping("/foundimage")
     public List<ImagePropertyDTO> inspectType(@RequestBody FileRecord file) throws IOException {
@@ -86,12 +90,6 @@ public class Extractor {
         load(file);
     }
 
-
-    //    private List<BufferedImage> load(File file) throws IOException {
-//        PDDocument doc = PDDocument.load(file);
-//        PDFEngine engine = new PDFEngine(doc);
-//        return engine.getImages();
-//    }
     private List<ImagePropertyDTO> load(File file) throws IOException {
         PDDocument doc = PDDocument.load(file);
         PDFEngine engine = new PDFEngine(doc);
@@ -107,17 +105,22 @@ public class Extractor {
     private List<ImagePropertyDTO> getArchiveFromWeb(String path) throws IOException, InterruptedException {
         client = HttpClient.newHttpClient();
         request = HttpRequest.newBuilder(URI.create(path)).GET().build();
-        response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+        List<ImagePropertyDTO> dtoList = new ArrayList<>();
 
         if (response.statusCode() == 200) {
 
-            File file = new File("src/main/java/com/captureimage/extractimage/temp/temp.pdf");
-
+            File file = File.createTempFile(
+                    "temp",
+                    ".pdf",
+                    new File("src/main/java/com/captureimage/extractimage/temp/")
+            );
             OutputStreamDocument outputStreamDocument = new OutputStreamDocument();
             outputStreamDocument.write(response.body(), file);
-            outputStreamDocument.getImages();
+            dtoList = outputStreamDocument.getImagePropertyDTOS();
         }
 
-        return List.of();
+        return dtoList;
     }
 }

@@ -28,13 +28,15 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
 
 /**
  * @author ADMIN
@@ -42,6 +44,7 @@ import java.util.regex.Pattern;
 public class FrmInitialScreean extends JFrame {
 
     private ExecutorService service = Executors.newCachedThreadPool();
+    private ExecutorService executeImages = Executors.newFixedThreadPool(5);
     private List<ImagePropertyDTO> dtos = null;
 
     public FrmInitialScreean() {
@@ -52,7 +55,7 @@ public class FrmInitialScreean extends JFrame {
         jScrollBar.setUnitIncrement(10);
         scroll.setVerticalScrollBar(jScrollBar);
         setTitle("IEx");
-        setIconImage(new ImageIcon("src/main/resources/images/img_2.png").getImage());
+        setIconImage(new ImageIcon(Objects.requireNonNull(Main.class.getResource("/images/IExIcon.png"))).getImage());
         setLocationRelativeTo(null);
         txtSearchListener();
     }
@@ -86,13 +89,21 @@ public class FrmInitialScreean extends JFrame {
     private void buildImage(List<ImagePropertyDTO> dtos) throws IOException {
         for (ImagePropertyDTO image : dtos){
 
-            BufferedImage read = ImageIO.read(new ByteArrayInputStream(image.getData()));
-            ImagePanel imagePanel = new ImagePanel(image.getWidth(), image.getHeigh(), read);
-            pnlImages.add(imagePanel, 0);
+            executeImages.execute(()->{
+                BufferedImage read = null;
+                try {
+                    read = ImageIO.read(new ByteArrayInputStream(image.getData()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
 
-            SwingUtilities.invokeLater(()->{
-                pnlImages.repaint();
-                pnlImages.revalidate();
+                ImagePanel imagePanel = new ImagePanel(image.getWidth(), image.getHeigh(), read);
+                pnlImages.add(imagePanel, 0);
+
+                SwingUtilities.invokeLater(()->{
+                    pnlImages.repaint();
+                    pnlImages.revalidate();
+                });
             });
         }
     }
@@ -135,9 +146,14 @@ public class FrmInitialScreean extends JFrame {
                 Extractor extractor = new Extractor();
                 try {
                     dtos = extractor.inspectType(new FileRecord(txtSearch.getText()));
-                    buildImage(dtos);
-                    btnSave.setEnabled(!dtos.isEmpty());
-                    btnClear.setEnabled(!dtos.isEmpty());
+
+                    if (dtos != null){
+                        buildImage(dtos);
+                        btnSave.setEnabled(!dtos.isEmpty());
+                        btnClear.setEnabled(!dtos.isEmpty());
+                    }
+
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
