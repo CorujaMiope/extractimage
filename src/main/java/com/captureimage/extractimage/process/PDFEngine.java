@@ -1,7 +1,7 @@
 package com.captureimage.extractimage.process;
 
 import com.captureimage.extractimage.dto.ImagePropertyDTO;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import org.apache.pdfbox.contentstream.PDFStreamEngine;
 import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.cos.COSBase;
@@ -12,6 +12,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,10 @@ public class PDFEngine extends PDFStreamEngine {
     private List<ImagePropertyDTO> imagePropertyDTOs = new ArrayList<>();
 
     public PDFEngine(PDDocument document) throws IOException {
+        System.out.println("o documento sera processado");
         processDocument(document);
+        document.close();
+        System.out.println("o documento passou pelo processo");
     }
 
     private void processDocument(PDDocument document) throws IOException {

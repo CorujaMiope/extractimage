@@ -4,49 +4,32 @@ import com.captureimage.extractimage.dto.ImagePropertyDTO;
 import com.captureimage.extractimage.process.OutputStreamDocument;
 import com.captureimage.extractimage.process.PDFEngine;
 import com.captureimage.extractimage.records.FileRecord;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.pdfbox.contentstream.PDFStreamEngine;
-import org.apache.pdfbox.debugger.ui.DocumentEntry;
-import org.apache.pdfbox.debugger.ui.PDFTreeModel;
-import org.apache.pdfbox.io.RandomAccessRead;
-import org.apache.pdfbox.io.ScratchFile;
-import org.apache.pdfbox.pdfparser.PDFObjectStreamParser;
-import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import org.apache.pdfbox.tools.PDFBox;
-import org.apache.pdfbox.tools.PDFText2HTML;
+import org.codehaus.plexus.util.FileUtils;
 import org.springframework.security.web.util.UrlUtils;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-import javax.imageio.ImageIO;
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Scanner;
 
 
-@RestController
-@RequestMapping("/archive/extract")
+//@RestController
+//@RequestMapping("/archive/extract")
 public class Extractor {
 
     private HttpClient client;
     private HttpRequest request;
     private HttpResponse<byte[]> response;
 
-    @GetMapping("/foundimage")
+//    @GetMapping("/foundimage")
     public List<ImagePropertyDTO> inspectType(@RequestBody FileRecord file) throws IOException {
 
         try {
@@ -57,7 +40,8 @@ public class Extractor {
 
             File archive = new File(file.path());
 
-            String type = FilenameUtils.getExtension(file.path()).toUpperCase();
+
+            String type = FileUtils.getExtension(file.path()).toUpperCase();
 
             switch (type) {
                 case "PDF" -> {
@@ -67,11 +51,12 @@ public class Extractor {
             }
 
 
-            PDDocument doc = PDDocument.load(new File(file.path()));
+            PDDocument doc = new  PDDocument();
+            doc.save(new File(file.path()));
             PDFEngine engine = new PDFEngine(doc);
             return engine.getImagePropertyDTOs();
         } catch (Exception ex) {
-            System.out.println(ex.getCause());
+            System.out.println("\n- The action could not be performed because:" + ex.getCause());
         }
         return List.of();
     }
@@ -110,14 +95,8 @@ public class Extractor {
         List<ImagePropertyDTO> dtoList = new ArrayList<>();
 
         if (response.statusCode() == 200) {
-
-            File file = File.createTempFile(
-                    "temp",
-                    ".pdf",
-                    new File("src/main/java/com/captureimage/extractimage/temp/")
-            );
             OutputStreamDocument outputStreamDocument = new OutputStreamDocument();
-            outputStreamDocument.write(response.body(), file);
+            outputStreamDocument.write(response.body());
             dtoList = outputStreamDocument.getImagePropertyDTOS();
         }
 
