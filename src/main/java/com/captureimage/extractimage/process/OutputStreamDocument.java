@@ -2,12 +2,9 @@ package com.captureimage.extractimage.process;
 
 import com.captureimage.extractimage.dto.ImagePropertyDTO;
 import lombok.Setter;
-
+import org.apache.pdfbox.pdmodel.PDDocument;
 
 import java.awt.image.BufferedImage;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;

@@ -4,21 +4,20 @@ import com.captureimage.extractimage.dto.ImagePropertyDTO;
 import com.captureimage.extractimage.process.OutputStreamDocument;
 import com.captureimage.extractimage.process.PDFEngine;
 import com.captureimage.extractimage.records.FileRecord;
+import com.captureimage.extractimage.services.PDFConverter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.codehaus.plexus.util.FileUtils;
 import org.springframework.security.web.util.UrlUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 
 //@RestController
@@ -61,18 +60,9 @@ public class Extractor {
         return List.of();
     }
 
-    private void convertToPDF(File file) throws IOException {
-
-        FileReader reader = new FileReader(file);
-        Scanner scan = new Scanner(reader);
-
-        StringBuilder photo = new StringBuilder();
-
-        while (scan.hasNext()) {
-            photo.append(scan.next());
-        }
-
-        load(file);
+    private List<BufferedImage> convertToPDF(File file) throws IOException {
+        List<BufferedImage> dtos = PDFConverter.docxToPDF(new FileInputStream(file).readAllBytes());
+        return dtos;
     }
 
     private List<ImagePropertyDTO> load(File file) throws IOException {
