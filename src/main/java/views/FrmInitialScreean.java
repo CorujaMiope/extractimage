@@ -28,8 +28,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
@@ -135,10 +133,14 @@ public class FrmInitialScreean extends JFrame {
     }
 
     private void btnSelectArchiverWebActionPerformed() {
+
+        System.out.println("Clicado");
         if (!txtSearch.getText().trim().isBlank()){
+            changeButtonMode();
 
             if (!UrlUtils.isAbsoluteUrl(txtSearch.getText())){
                 CustomDialog.errorDialog("Erro", "Link inválido", this);
+                changeButtonMode();
                 return;
             }
 
@@ -156,9 +158,16 @@ public class FrmInitialScreean extends JFrame {
 
                 } catch (IOException e) {
                     throw new RuntimeException(e);
+                }finally {
+                    changeButtonMode();
                 }
             });
         }
+    }
+
+    private void changeButtonMode(){
+        btnSelectArchiverWeb.setVisible(!btnSelectArchiverWeb.isVisible());
+        lblLoading.setVisible(!lblLoading.isVisible());
     }
 
     private void btnSaveActionPerformed() {
@@ -181,7 +190,11 @@ public class FrmInitialScreean extends JFrame {
                         g1.setRenderingHints (rh);
 
                         DateFormatter formatter = new DateFormatter(new SimpleDateFormat("dd_MM_aaaa_HH_mm_ss"));
-                        String fileName = "img_%s.jpg".formatted(formatter.getFormat().format(Date.from(Instant.now())));
+                        String fileName = "img_%s-%s.jpg".formatted(
+                                dtos.indexOf(img) + 1,
+                                formatter.getFormat().format(Date.from(Instant.now()))
+                        );
+
                         File filePath = new File(chooser.getSelectedFile().getPath() + "/" + fileName);
                         ImageIO.write(read, "jpg", filePath);
                     } catch (Exception e) {
@@ -192,6 +205,7 @@ public class FrmInitialScreean extends JFrame {
                 }
                 loadingMode(false);
                 btnSave.setEnabled(false);
+                btnClear.setEnabled(false);
             });
         }
     }
@@ -204,6 +218,7 @@ public class FrmInitialScreean extends JFrame {
                 pnlImages.revalidate();
             }
             btnClear.setEnabled(false);
+            btnSave.setEnabled(false);
         });
     }
 
@@ -231,6 +246,8 @@ public class FrmInitialScreean extends JFrame {
         panel3 = new JPanel();
         panel4 = new JPanel();
         txtSearch = new JTextField();
+        panel1 = new JPanel();
+        lblLoading = new JXBusyLabel();
         btnSelectArchiverWeb = new RoundedButton();
         scroll = new JScrollPane();
         pnlImages = new JPanel();
@@ -302,12 +319,25 @@ public class FrmInitialScreean extends JFrame {
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 2), 0, 0));
 
-                    //---- btnSelectArchiverWeb ----
-                    btnSelectArchiverWeb.setText("Selecionar arquivo na web");
-                    btnSelectArchiverWeb.setBorder(new RoundedBorder());
-                    btnSelectArchiverWeb.setBackground(new Color(0x3366ff));
-                    btnSelectArchiverWeb.addActionListener(e -> btnSelectArchiverWebActionPerformed());
-                    panel4.add(btnSelectArchiverWeb, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                    //======== panel1 ========
+                    {
+                        panel1.setOpaque(false);
+                        panel1.setLayout(new BorderLayout());
+
+                        //---- lblLoading ----
+                        lblLoading.setBackground(new Color(0x3366ff));
+                        lblLoading.setBusy(true);
+                        lblLoading.setVisible(false);
+                        panel1.add(lblLoading, BorderLayout.WEST);
+
+                        //---- btnSelectArchiverWeb ----
+                        btnSelectArchiverWeb.setText("Selecionar arquivo na web");
+                        btnSelectArchiverWeb.setBorder(new RoundedBorder());
+                        btnSelectArchiverWeb.setBackground(new Color(0x3366ff));
+                        btnSelectArchiverWeb.addActionListener(e -> btnSelectArchiverWebActionPerformed());
+                        panel1.add(btnSelectArchiverWeb, BorderLayout.CENTER);
+                    }
+                    panel4.add(panel1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                         new Insets(0, 0, 0, 0), 0, 0));
                 }
@@ -351,6 +381,8 @@ public class FrmInitialScreean extends JFrame {
     private JPanel panel3;
     private JPanel panel4;
     private JTextField txtSearch;
+    private JPanel panel1;
+    private JXBusyLabel lblLoading;
     private RoundedButton btnSelectArchiverWeb;
     private JScrollPane scroll;
     private JPanel pnlImages;
