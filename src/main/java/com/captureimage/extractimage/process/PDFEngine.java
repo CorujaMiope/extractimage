@@ -21,12 +21,12 @@ public class PDFEngine extends PDFStreamEngine {
 
     private List<BufferedImage> images = new ArrayList<>();
     private List<ImagePropertyDTO> imagePropertyDTOs = new ArrayList<>();
+    private PDDocument document;
 
     public PDFEngine(PDDocument document) throws IOException {
-        System.out.println("o documento sera processado");
+        this.document = document;
         processDocument(document);
         document.close();
-        System.out.println("o documento passou pelo processo");
     }
 
     private void processDocument(PDDocument document) throws IOException {
@@ -37,6 +37,7 @@ public class PDFEngine extends PDFStreamEngine {
 
     @Override
     protected void processOperator(Operator operator, List<COSBase> operands) throws IOException {
+
         for (var base : operands) {
             if (base instanceof COSName name && operator.getName().equals("Do")) {
                 PDImageXObject thumbnail = PDImageXObject.createThumbnail(getResources().getXObject(name).getCOSStream());

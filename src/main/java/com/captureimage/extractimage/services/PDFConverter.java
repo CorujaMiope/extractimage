@@ -1,48 +1,55 @@
 package com.captureimage.extractimage.services;
 
+import com.captureimage.extractimage.dto.ImagePropertyDTO;
 import com.captureimage.extractimage.process.PDFEngine;
+import com.spire.doc.Document;
+import com.spire.doc.FileFormat;
+import com.spire.doc.PdfConformanceLevel;
+import com.spire.doc.ToPdfParameterList;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfWriter;
 
-import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 public class PDFConverter {
 
-    public static List<BufferedImage> docxToPDF(byte[] bytes) {
+   private static ToPdfParameterList parameter = new ToPdfParameterList();
+    private static Path temp;
 
-        try (
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-                XWPFDocument document = new XWPFDocument(inputStream);
-        ) {
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(bytes.length);
-            inputStream.transferTo(outputStream);
-
-            Document pdfDocument = new Document();
-            PdfWriter.getInstance(pdfDocument, outputStream);
-            pdfDocument.open();
-
-            document.getParagraphs().forEach(paragraph -> {
-                try {
-                    pdfDocument.add(new Paragraph(paragraph.getText()));
-                } catch (DocumentException e) {
-                    e.printStackTrace();
-                }
-            });
-
-            pdfDocument.close();
-
-            PDFEngine engine = new PDFEngine(PDDocument.load(new ByteArrayInputStream(outputStream.toByteArray())));
-            System.out.println("DOCX convertido para PDF com sucesso!");
-            return engine.getImages();
-        } catch (Exception e) {
-            e.printStackTrace();
+    static {
+        try {
+            temp = Files.createTempFile(Path.of("src/main/resources/temp"), "temp", ".pdf");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+    }
 
-        return null;
+    public PDFConverter() throws IOException {
+    }
+
+    public static List<ImagePropertyDTO> docxToPDF(File file) throws IOException {
+
+        Document doc = new Document(file.getAbsolutePath());
+
+        parameter.setPdfConformanceLevel(PdfConformanceLevel.Pdf_A_1_A);
+        doc.saveToFile(temp.toFile().getAbsolutePath(), parameter);
+
+        PDFEngine engine = new PDFEngine(PDDocument.load(temp.toFile()));
+
+        return engine.getImagePropertyDTOs();
+    }
+
+    public static List<ImagePropertyDTO> docxToPDF(byte[] bytes) throws IOException {
+
+        Document doc = new Document(new ByteArrayInputStream(bytes));
+        parameter.setPdfConformanceLevel(PdfConformanceLevel.Pdf_A_1_A);
+        doc.saveToFile(temp.toFile().getAbsolutePath(), parameter);
+
+        PDFEngine engine = new PDFEngine(PDDocument.load(temp.toFile()));
+        return engine.getImagePropertyDTOs();
     }
 }
