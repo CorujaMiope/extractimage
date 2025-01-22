@@ -178,6 +178,7 @@ public class FrmInitialScreean extends JFrame {
 
             service.submit(() -> {
                 loadingMode(true);
+                saveLoading(true);
                 for (var img : dtos) {
                     try {
 
@@ -200,17 +201,36 @@ public class FrmInitialScreean extends JFrame {
                     } catch (Exception e) {
                         System.out.println("Error: " + e.getCause());
                         loadingMode(false);
-                        btnSave.setEnabled(false);
+                        changeButtonMode();
                     }
                 }
                 loadingMode(false);
-                btnSave.setEnabled(false);
-                btnClear.setEnabled(false);
+                saveLoading(false);
+
+                clear();
             });
         }
     }
 
+    private void saveLoading(boolean load){
+        lblWarning.setText(load ? "Salvando..." : "Finalizado");
+        lblWarning.setForeground(load ? Color.BLUE : Color.green);
+
+        new Thread(()->{
+            try {
+                Thread.sleep(1000);
+                lblWarning.setVisible(load);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+    }
+
     private void btnClearActionPerformed() {
+        clear();
+    }
+
+    private void clear() {
         SwingUtilities.invokeLater(()->{
             for (Component component : pnlImages.getComponents()) {
                 pnlImages.remove(component);
@@ -238,7 +258,9 @@ public class FrmInitialScreean extends JFrame {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
+        // Generated using JFormDesigner Evaluation license - VINICIUS TEODORO
         panel2 = new JPanel();
+        lblWarning = new JLabel();
         pnlButtons = new JPanel();
         btnSave = new RoundedButton();
         btnSelectArchiver = new RoundedButton();
@@ -261,11 +283,20 @@ public class FrmInitialScreean extends JFrame {
         //======== panel2 ========
         {
             panel2.setBackground(new Color(0x333333));
+            panel2.setBorder (new javax. swing. border. CompoundBorder( new javax .swing .border .TitledBorder (new javax. swing. border
+            . EmptyBorder( 0, 0, 0, 0) , "JFor\u006dDesi\u0067ner \u0045valu\u0061tion", javax. swing. border. TitledBorder. CENTER, javax
+            . swing. border. TitledBorder. BOTTOM, new java .awt .Font ("Dia\u006cog" ,java .awt .Font .BOLD ,
+            12 ), java. awt. Color. red) ,panel2. getBorder( )) ); panel2. addPropertyChangeListener (new java. beans
+            . PropertyChangeListener( ){ @Override public void propertyChange (java .beans .PropertyChangeEvent e) {if ("bord\u0065r" .equals (e .
+            getPropertyName () )) throw new RuntimeException( ); }} );
             panel2.setLayout(new GridBagLayout());
             ((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {196, 0, 0};
             ((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0, 0};
             ((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {0.0, 1.0, 1.0E-4};
             ((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {0.0, 1.0, 1.0E-4};
+            panel2.add(lblWarning, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
 
             //======== pnlButtons ========
             {
@@ -373,7 +404,9 @@ public class FrmInitialScreean extends JFrame {
 
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
+    // Generated using JFormDesigner Evaluation license - VINICIUS TEODORO
     private JPanel panel2;
+    private JLabel lblWarning;
     private JPanel pnlButtons;
     private RoundedButton btnSave;
     private RoundedButton btnSelectArchiver;
