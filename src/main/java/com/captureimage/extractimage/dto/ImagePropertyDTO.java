@@ -1,8 +1,6 @@
 package com.captureimage.extractimage.dto;
 
-import lombok.Data;
 
-@Data
 public class ImagePropertyDTO {
 
     private Integer width;
@@ -12,6 +10,30 @@ public class ImagePropertyDTO {
     public ImagePropertyDTO(Integer width, Integer heigh, byte[] data) {
         this.width = width;
         this.heigh = heigh;
+        this.data = data;
+    }
+
+    public Integer getWidth() {
+        return width;
+    }
+
+    public void setWidth(Integer width) {
+        this.width = width;
+    }
+
+    public Integer getHeigh() {
+        return heigh;
+    }
+
+    public void setHeigh(Integer heigh) {
+        this.heigh = heigh;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public void setData(byte[] data) {
         this.data = data;
     }
 }

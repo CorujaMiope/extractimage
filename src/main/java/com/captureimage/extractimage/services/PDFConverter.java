@@ -17,18 +17,18 @@ import java.util.List;
 
 public class PDFConverter {
 
-   private static ToPdfParameterList parameter = new ToPdfParameterList();
-    private static Path temp;
+    private static ToPdfParameterList parameter = new ToPdfParameterList();
+
+    private static Path path = Path.of("C:\\Users\\ADMIN\\TEMP_PDF");
+    private static File temp;
 
     static {
         try {
-            temp = Files.createTempFile(Path.of("src/main/resources/temp"), "temp", ".pdf");
+            temp = File.createTempFile("temp", ".pdf", path.toFile());
+            //TODO criar uma função chamada "private String getPath()" que ira retornar todo esse escopo do path e file como caminho
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public PDFConverter() throws IOException {
     }
 
     public static List<ImagePropertyDTO> docxToPDF(File file) throws IOException {
@@ -36,9 +36,14 @@ public class PDFConverter {
         Document doc = new Document(file.getAbsolutePath());
 
         parameter.setPdfConformanceLevel(PdfConformanceLevel.Pdf_A_1_A);
-        doc.saveToFile(temp.toFile().getAbsolutePath(), parameter);
 
-        PDFEngine engine = new PDFEngine(PDDocument.load(temp.toFile()));
+        if (!path.toFile().exists()) {
+            path.toFile().mkdirs();
+        }
+
+        doc.saveToFile(temp.getAbsolutePath(), parameter);
+
+        PDFEngine engine = new PDFEngine(PDDocument.load(temp));
 
         return engine.getImagePropertyDTOs();
     }
@@ -47,9 +52,14 @@ public class PDFConverter {
 
         Document doc = new Document(new ByteArrayInputStream(bytes));
         parameter.setPdfConformanceLevel(PdfConformanceLevel.Pdf_A_1_A);
-        doc.saveToFile(temp.toFile().getAbsolutePath(), parameter);
 
-        PDFEngine engine = new PDFEngine(PDDocument.load(temp.toFile()));
+        if (!path.toFile().exists()) {
+            path.toFile().mkdirs();
+        }
+
+        doc.saveToFile(temp.getAbsolutePath(), parameter);
+
+        PDFEngine engine = new PDFEngine(PDDocument.load(temp));
         return engine.getImagePropertyDTOs();
     }
 }

@@ -7,15 +7,16 @@ package views;
 import com.captureimage.extractimage.controller.Extractor;
 import com.captureimage.extractimage.dto.ImagePropertyDTO;
 import com.captureimage.extractimage.records.FileRecord;
+import com.captureimage.extractimage.utils.UrlUtils;
 import enums.DIALOG_MODE;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jdesktop.swingx.WrapLayout;
-import org.springframework.security.web.util.UrlUtils;
 import views.panels.ImagePanel;
 import views.panels.RoundedBorder;
 import views.panels.RoundedButton;
 import views.utils.CustomDialog;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -28,6 +29,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
@@ -41,6 +43,7 @@ import java.util.concurrent.Executors;
  */
 public class FrmInitialScreean extends JFrame {
 
+    private static final Logger log = LogManager.getLogger(FrmInitialScreean.class);
     private ExecutorService service = Executors.newCachedThreadPool();
     private ExecutorService executeImages = Executors.newFixedThreadPool(5);
     private List<ImagePropertyDTO> dtos = null;
@@ -77,7 +80,7 @@ public class FrmInitialScreean extends JFrame {
             }
 
             private void changeColorText(){
-                boolean isUrl =  UrlUtils.isAbsoluteUrl(txtSearch.getText());
+                boolean isUrl = UrlUtils.isAbsoluteUrl(txtSearch.getText());
                 txtSearch.setForeground(isUrl ? Color.blue : Color.black);
             }
 

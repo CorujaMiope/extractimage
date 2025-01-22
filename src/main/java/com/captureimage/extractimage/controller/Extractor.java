@@ -5,14 +5,12 @@ import com.captureimage.extractimage.process.OutputStreamDocument;
 import com.captureimage.extractimage.process.PDFEngine;
 import com.captureimage.extractimage.records.FileRecord;
 import com.captureimage.extractimage.services.PDFConverter;
+import com.captureimage.extractimage.utils.UrlUtils;
 import enums.DOC_TYPE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
-
 import org.codehaus.plexus.util.FileUtils;
-import org.springframework.security.web.util.UrlUtils;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,9 +21,6 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-
-//@RestController
-//@RequestMapping("/archive/extract")
 public class Extractor {
 
     private static final Logger log = LogManager.getLogger(Extractor.class);
@@ -33,8 +28,7 @@ public class Extractor {
     private HttpRequest request;
     private HttpResponse<byte[]> response;
 
-    //    @GetMapping("/foundimage")
-    public List<ImagePropertyDTO> inspectType(@RequestBody FileRecord file) throws IOException {
+    public List<ImagePropertyDTO> inspectType(FileRecord file) throws IOException {
 
         try {
 
